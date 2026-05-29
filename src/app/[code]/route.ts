@@ -7,7 +7,7 @@ export async function GET(
   context: { params: Promise<{ code: string }> },
 ) {
   const { code } = await context.params;
-  const shortLink = findGuestShortLink(code);
+  const shortLink = await findGuestShortLink(code);
 
   if (!shortLink) {
     notFound();

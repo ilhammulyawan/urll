@@ -1,0 +1,2 @@
+NEXTJS_ENV=development
+PUBLIC_APP_ORIGIN=http://localhost:8787

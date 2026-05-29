@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "urll",
+  "compatibility_date": "2026-05-29",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "urll"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "GUEST_LINKS_KV",
+      "id": "0123456789abcdef0123456789abcdef",
+      "preview_id": "fedcba9876543210fedcba9876543210"
+    }
+  ]
+}

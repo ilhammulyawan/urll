@@ -1,4 +1,8 @@
-const GUEST_LINK_TTL_MS = 1000 * 60 * 60 * 24;
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+const GUEST_LINK_TTL_SECONDS = 60 * 60 * 24;
+const GUEST_LINK_TTL_MS = GUEST_LINK_TTL_SECONDS * 1000;
+const GUEST_LINKS_KV_PREFIX = "guest:";
 
 type GuestLinkRecord = {
   code: string;
@@ -9,6 +13,7 @@ type GuestLinkRecord = {
 };
 
 type GuestRegistry = Map<string, GuestLinkRecord>;
+type GuestLinkStorage = "cloudflare-kv" | "memory-fallback";
 
 declare global {
   var __tinyLinkGuestRegistry__: GuestRegistry | undefined;
@@ -31,17 +36,64 @@ function cleanupExpiredLinks(now: number) {
 
 function generateCode() {
   let code = "";
+  const randomValues = crypto.getRandomValues(new Uint8Array(CODE_LENGTH));
 
   for (let index = 0; index < CODE_LENGTH; index += 1) {
-    const randomIndex = Math.floor(Math.random() * CODE_ALPHABET.length);
+    const randomIndex = randomValues[index] % CODE_ALPHABET.length;
     code += CODE_ALPHABET[randomIndex];
   }
 
   return code;
 }
 
-export function createGuestShortLink(targetUrl: string) {
+function getGuestLinkKey(code: string) {
+  return `${GUEST_LINKS_KV_PREFIX}${code}`;
+}
+
+async function getGuestLinksKv() {
+  try {
+    const { env } = await getCloudflareContext({ async: true });
+    return env.GUEST_LINKS_KV ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createGuestShortLink(targetUrl: string): Promise<GuestLinkRecord & { storage: GuestLinkStorage }> {
   const now = Date.now();
+  const expiresAt = now + GUEST_LINK_TTL_MS;
+  const kv = await getGuestLinksKv();
+
+  if (kv) {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const code = generateCode();
+      const existing = await kv.get(getGuestLinkKey(code), "json");
+
+      if (existing) {
+        continue;
+      }
+
+      const record: GuestLinkRecord = {
+        code,
+        targetUrl,
+        createdAt: now,
+        expiresAt,
+        source: "guest",
+      };
+
+      await kv.put(getGuestLinkKey(code), JSON.stringify(record), {
+        expirationTtl: GUEST_LINK_TTL_SECONDS,
+      });
+
+      return {
+        ...record,
+        storage: "cloudflare-kv",
+      };
+    }
+
+    throw new Error("Unable to allocate a unique guest short code.");
+  }
+
   cleanupExpiredLinks(now);
 
   let code = generateCode();
@@ -53,16 +105,35 @@ export function createGuestShortLink(targetUrl: string) {
     code,
     targetUrl,
     createdAt: now,
-    expiresAt: now + GUEST_LINK_TTL_MS,
+    expiresAt,
     source: "guest",
   };
 
   guestRegistry.set(code, record);
-  return record;
+  return {
+    ...record,
+    storage: "memory-fallback",
+  };
 }
 
-export function findGuestShortLink(code: string) {
+export async function findGuestShortLink(code: string) {
   const now = Date.now();
+  const kv = await getGuestLinksKv();
+
+  if (kv) {
+    const record = await kv.get<GuestLinkRecord>(getGuestLinkKey(code), "json");
+
+    if (!record || record.expiresAt <= now) {
+      if (record) {
+        await kv.delete(getGuestLinkKey(code));
+      }
+
+      return null;
+    }
+
+    return record;
+  }
+
   cleanupExpiredLinks(now);
 
   const record = guestRegistry.get(code);

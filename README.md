@@ -1,6 +1,6 @@
 # Tiny Link by Mulyawan
 
-Tahap 1 dari aplikasi shortlink **Tiny Link by Mulyawan** dibangun dengan **Next.js App Router** dan **Tailwind CSS v4**. Fokus fase ini adalah fondasi UI publik, guest shortener tanpa penyimpanan permanen, serta struktur konten yang siap dikelola admin pada tahap berikutnya.
+Tahap 1 dari aplikasi shortlink **Tiny Link by Mulyawan** dibangun dengan **Next.js App Router** dan **Tailwind CSS v4**. Fokus fase ini adalah fondasi UI publik, guest shortener tanpa penyimpanan permanen, serta struktur konten yang siap dikelola admin pada tahap berikutnya. Repo ini juga sudah disiapkan untuk deploy ke **Cloudflare Workers** lewat **OpenNext**.
 
 ## Yang dibangun pada Tahap 1
 
@@ -8,7 +8,7 @@ Tahap 1 dari aplikasi shortlink **Tiny Link by Mulyawan** dibangun dengan **Next
 - UI responsif untuk mobile, tablet, dan desktop.
 - Animasi halus melalui transition, hover state, dan reveal-on-scroll.
 - Form shorten URL langsung dari landing page untuk **guest mode**.
-- Guest short link disimpan di **ephemeral in-memory registry** terpisah dari fondasi data user, sehingga tidak menjadi link permanen/dashboard user.
+- Guest short link disimpan terpisah dari fondasi data user. Saat deploy ke Cloudflare Workers, link guest menggunakan **Cloudflare KV** dengan TTL 24 jam; saat development biasa, aplikasi memakai fallback **in-memory**.
 - **Dark mode** dan **read mode** dengan persistensi preferensi di `localStorage`.
 - Struktur konten landing terpusat di file konfigurasi bertipe agar mudah dipakai admin CMS pada Tahap 2/3.
 
@@ -57,9 +57,42 @@ npm run lint
 npm run build
 ```
 
+## Deploy ke Cloudflare Workers
+
+### 1. Install dependency
+
+```bash
+npm install
+```
+
+### 2. Siapkan Cloudflare
+
+- Buat KV namespace untuk guest links.
+- Ganti `id` dan `preview_id` pada `/tmp/workspace/ilhammulyawan/urll/wrangler.jsonc`.
+- Jika ingin short URL selalu memakai domain tertentu, set `PUBLIC_APP_ORIGIN` di environment Cloudflare Worker.
+
+### 3. Development / preview
+
+```bash
+cp .dev.vars.example .dev.vars
+npm run preview
+```
+
+### 4. Deploy
+
+```bash
+npm run deploy
+```
+
+### 5. File konfigurasi penting
+
+- `/tmp/workspace/ilhammulyawan/urll/wrangler.jsonc` — binding Worker, assets, dan KV.
+- `/tmp/workspace/ilhammulyawan/urll/open-next.config.ts` — adapter OpenNext untuk Cloudflare.
+- `/tmp/workspace/ilhammulyawan/urll/.dev.vars.example` — contoh env lokal untuk preview.
+
 ## Catatan arsitektur untuk Tahap 2 / Tahap 3
 
-- **Auth & saved links:** guest registry sudah dipisahkan dari storage user agar nanti link yang dibuat setelah login bisa disimpan ke database tanpa bercampur dengan link guest.
+- **Auth & saved links:** guest link storage sudah dipisahkan dari storage user agar nanti link yang dibuat setelah login bisa disimpan ke database tanpa bercampur dengan link guest.
 - **Admin-manageable landing content:** seluruh copy/section utama sudah dipusatkan di `src/content/landing-content.ts`, sehingga admin panel/CMS nanti cukup menulis ke layer yang menggantikan sumber konfigurasi ini.
 - **QR code & analytics:** flow shorten dan redirect sudah dipisah ke route handler, sehingga penambahan QR generator, click tracking, chart, dan dashboard bisa dilakukan di layer route/service tanpa membongkar landing page.
 

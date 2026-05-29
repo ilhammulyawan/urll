@@ -6,7 +6,7 @@ type ApiSuccess = {
   shortUrl: string;
   code: string;
   expiresAt: number;
-  storage: "ephemeral-guest";
+  storage: "cloudflare-kv" | "memory-fallback";
 };
 
 type ApiFailure = {
@@ -87,7 +87,7 @@ export function ShortenForm() {
             {isSubmitting ? "Generating..." : "Generate guest short link"}
           </button>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Guest links are stored separately in an ephemeral registry and are not saved to future user dashboards.
+            Guest links stay separate from future user dashboards and use Cloudflare KV in deployed Workers with a safe local fallback during development.
           </p>
         </div>
       </form>

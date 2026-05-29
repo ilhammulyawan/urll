@@ -85,7 +85,7 @@ export default function Home() {
             <div className="rounded-[2rem] border border-dashed border-black/10 bg-white/55 p-5 text-sm text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
               <p className="font-semibold text-slate-950 dark:text-white">Prepared for Tahap 2/3</p>
               <p className="mt-2">
-                Guest links use a separate ephemeral registry today. This leaves a clear path for future login-based saved links, QR codes, click analytics, and admin-managed content workflows.
+                Guest links now target Cloudflare KV for deployed Workers while keeping a local fallback for development. This still leaves a clear path for future login-based saved links, QR codes, click analytics, and admin-managed content workflows.
               </p>
             </div>
           </div>
