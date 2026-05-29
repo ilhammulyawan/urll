@@ -60,7 +60,7 @@ export const landingContent: LandingContent = {
       eyebrow: "Ephemeral routing",
       title: "Separated from future user data",
       description:
-        "Guest links use Cloudflare KV in deployed Workers and a local in-memory fallback during development, while staying clearly separated from the future account-based storage layer.",
+        "Guest links stay separate from future account data and use Cloudflare KV in deployed Workers with a local in-memory fallback for development.",
     },
     {
       eyebrow: "Content foundation",

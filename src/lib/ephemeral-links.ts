@@ -3,6 +3,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 const GUEST_LINK_TTL_SECONDS = 60 * 60 * 24;
 const GUEST_LINK_TTL_MS = GUEST_LINK_TTL_SECONDS * 1000;
 const GUEST_LINKS_KV_PREFIX = "guest:";
+const MAX_CODE_GENERATION_ATTEMPTS = 5;
 
 type GuestLinkRecord = {
   code: string;
@@ -24,6 +25,7 @@ const guestRegistry = globalThis.__tinyLinkGuestRegistry__ ?? new Map<string, Gu
 globalThis.__tinyLinkGuestRegistry__ = guestRegistry;
 
 const CODE_LENGTH = 7;
+// Excludes visually similar characters to keep manually shared codes easy to read.
 const CODE_ALPHABET = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function cleanupExpiredLinks(now: number) {
@@ -65,7 +67,7 @@ export async function createGuestShortLink(targetUrl: string): Promise<GuestLink
   const kv = await getGuestLinksKv();
 
   if (kv) {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
+    for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt += 1) {
       const code = generateCode();
       const existing = await kv.get(getGuestLinkKey(code), "json");
 
