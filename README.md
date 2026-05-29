@@ -68,7 +68,7 @@ npm install
 ### 2. Siapkan Cloudflare
 
 - Buat KV namespace untuk guest links.
-- Ganti `id` dan `preview_id` pada `/tmp/workspace/ilhammulyawan/urll/wrangler.jsonc`.
+- Ganti `id` dan `preview_id` pada `wrangler.jsonc`.
 - Jika ingin short URL selalu memakai domain tertentu, set `PUBLIC_APP_ORIGIN` di environment Cloudflare Worker.
 
 ### 3. Development / preview
@@ -86,9 +86,9 @@ npm run deploy
 
 ### 5. File konfigurasi penting
 
-- `/tmp/workspace/ilhammulyawan/urll/wrangler.jsonc` — binding Worker, assets, dan KV.
-- `/tmp/workspace/ilhammulyawan/urll/open-next.config.ts` — adapter OpenNext untuk Cloudflare.
-- `/tmp/workspace/ilhammulyawan/urll/.dev.vars.example` — contoh env lokal untuk preview.
+- `wrangler.jsonc` — binding Worker, assets, dan KV.
+- `open-next.config.ts` — adapter OpenNext untuk Cloudflare.
+- `.dev.vars.example` — contoh env lokal untuk preview.
 
 ## Catatan arsitektur untuk Tahap 2 / Tahap 3
 
