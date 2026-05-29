@@ -17,6 +17,7 @@
   "kv_namespaces": [
     {
       "binding": "GUEST_LINKS_KV",
+      // Replace these example IDs with your real Cloudflare KV namespace IDs before deploy.
       "id": "0123456789abcdef0123456789abcdef",
       "preview_id": "fedcba9876543210fedcba9876543210"
     }
