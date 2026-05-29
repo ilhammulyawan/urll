@@ -34,7 +34,7 @@ export const landingContent: LandingContent = {
     name: "Tiny Link by Mulyawan",
     tagline: "Shorten long URLs instantly without signing in.",
     description:
-      "Create clean guest short links from the landing page, switch between dark and read mode, and start from a modular content foundation that is ready for future admin management.",
+      "Create clean guest short links from the landing page, switch between dark and reading mode, and start from a modular content foundation that is ready for future admin management.",
     ctaPrimary: "Shorten now",
     ctaSecondary: "Explore features",
   },
@@ -60,7 +60,7 @@ export const landingContent: LandingContent = {
       eyebrow: "Ephemeral routing",
       title: "Separated from future user data",
       description:
-        "Guest links live in an in-memory store with an expiry window, clearly separated from the future account-based storage layer.",
+        "Guest links use Cloudflare KV in deployed Workers and a local in-memory fallback during development, while staying clearly separated from the future account-based storage layer.",
     },
     {
       eyebrow: "Content foundation",
@@ -78,7 +78,7 @@ export const landingContent: LandingContent = {
     {
       title: "Generate an instant Tiny Link",
       description:
-        "The app validates your input, creates a readable code, and stores it in a temporary guest-only registry.",
+        "The app validates your input, creates a readable code, and stores it in guest-only storage with an automatic expiry window.",
     },
     {
       title: "Share, copy, and continue",
