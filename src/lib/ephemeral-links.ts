@@ -24,9 +24,10 @@ const guestRegistry = globalThis.__tinyLinkGuestRegistry__ ?? new Map<string, Gu
 
 globalThis.__tinyLinkGuestRegistry__ = guestRegistry;
 
-const CODE_LENGTH = 7;
 // Excludes visually similar characters to keep manually shared codes easy to read.
+const CODE_LENGTH = 7;
 const CODE_ALPHABET = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const RANDOM_INDEX_LIMIT = Math.floor(256 / CODE_ALPHABET.length) * CODE_ALPHABET.length;
 
 function cleanupExpiredLinks(now: number) {
   for (const [code, entry] of guestRegistry.entries()) {
@@ -38,11 +39,23 @@ function cleanupExpiredLinks(now: number) {
 
 function generateCode() {
   let code = "";
-  const randomValues = crypto.getRandomValues(new Uint8Array(CODE_LENGTH));
+  const randomValues = new Uint8Array(CODE_LENGTH);
+  let cursor = randomValues.length;
 
-  for (let index = 0; index < CODE_LENGTH; index += 1) {
-    const randomIndex = randomValues[index] % CODE_ALPHABET.length;
-    code += CODE_ALPHABET[randomIndex];
+  while (code.length < CODE_LENGTH) {
+    if (cursor >= randomValues.length) {
+      crypto.getRandomValues(randomValues);
+      cursor = 0;
+    }
+
+    const randomValue = randomValues[cursor];
+    cursor += 1;
+
+    if (randomValue >= RANDOM_INDEX_LIMIT) {
+      continue;
+    }
+
+    code += CODE_ALPHABET[randomValue % CODE_ALPHABET.length];
   }
 
   return code;
@@ -93,29 +106,34 @@ export async function createGuestShortLink(targetUrl: string): Promise<GuestLink
       };
     }
 
-    throw new Error("Unable to allocate a unique guest short code.");
+    throw new Error(`Unable to allocate a unique guest short code after ${MAX_CODE_GENERATION_ATTEMPTS} attempts.`);
   }
 
   cleanupExpiredLinks(now);
 
-  let code = generateCode();
-  while (guestRegistry.has(code)) {
-    code = generateCode();
+  for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt += 1) {
+    const code = generateCode();
+
+    if (guestRegistry.has(code)) {
+      continue;
+    }
+
+    const record: GuestLinkRecord = {
+      code,
+      targetUrl,
+      createdAt: now,
+      expiresAt,
+      source: "guest",
+    };
+
+    guestRegistry.set(code, record);
+    return {
+      ...record,
+      storage: "memory-fallback",
+    };
   }
 
-  const record: GuestLinkRecord = {
-    code,
-    targetUrl,
-    createdAt: now,
-    expiresAt,
-    source: "guest",
-  };
-
-  guestRegistry.set(code, record);
-  return {
-    ...record,
-    storage: "memory-fallback",
-  };
+  throw new Error(`Unable to allocate a unique guest short code after ${MAX_CODE_GENERATION_ATTEMPTS} attempts.`);
 }
 
 export async function findGuestShortLink(code: string) {

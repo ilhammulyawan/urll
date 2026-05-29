@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "check:cloudflare": "node -e \"const fs=require('node:fs'); const txt=fs.readFileSync('wrangler.jsonc','utf8'); if(/\\\"id\\\":\\s*\\\"0{32}\\\"/.test(txt)||/\\\"preview_id\\\":\\s*\\\"1{32}\\\"/.test(txt)){console.error('Update placeholder KV namespace IDs in wrangler.jsonc before deploy.'); process.exit(1)}\"",
+    "deploy": "npm run check:cloudflare && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
