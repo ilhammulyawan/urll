@@ -65,7 +65,7 @@ export async function createGuestShortLink(targetUrl: string): Promise<GuestLink
   const kv = await getGuestLinksKv();
 
   if (kv) {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
       const code = generateCode();
       const existing = await kv.get(getGuestLinkKey(code), "json");
 
