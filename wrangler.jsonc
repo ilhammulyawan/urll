@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "urll",
+  "compatibility_date": "2026-05-29",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "urll"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "GUEST_LINKS_KV",
+      // Replace these example IDs with your real Cloudflare KV namespace IDs before deploy.
+      "id": "00000000000000000000000000000000",
+      "preview_id": "11111111111111111111111111111111"
+    }
+  ]
+}
